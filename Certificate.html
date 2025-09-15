@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Certificate Generator — Ruchi Tutorial</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 18px;
+      background: linear-gradient(180deg,#f3f2f0 0%, #ffffff 40%);
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+    }
+    .certificate-wrap {
+      width: 1120px;
+      aspect-ratio: 1120/792;
+      margin: 20px auto;
+      background: #fffefb;
+      padding: 44px 56px;
+      border-radius: 14px;
+      box-shadow: 0 12px 40px rgba(30,30,30,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    .foil-band {
+      position:absolute;left:28px;top:28px;bottom:28px;width:112px;
+      background:linear-gradient(180deg,#b8860b,#6b3b1f);
+      border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-family:'Playfair Display',serif;font-weight:700;
+      box-shadow:inset 0 0 8px rgba(255,255,255,0.4), inset 0 0 20px rgba(0,0,0,0.2);
+    }
+    .foil-band .monogram{font-size:32px;letter-spacing:2px}
+    .content{margin-left:160px;height:100%;display:flex;flex-direction:column;justify-content:space-between}
+    header.cert-header{display:flex;align-items:center;gap:18px}
+    .title{font-family:'Playfair Display',serif;color:#6b3b1f;font-size:34px;margin:0}
+    .sub{font-size:12px;color:#6b6b6b;text-transform:uppercase;letter-spacing:2px}
+    .watermark{position:absolute;right:40px;top:40%;transform:translateY(-50%);font-family:'Playfair Display',serif;color:rgba(107,59,31,0.06);font-size:140px;pointer-events:none;user-select:none}
+    .student{font-family:'Playfair Display',serif;font-size:42px;color:#231815;margin:6px 0 10px}
+    .badge{width:170px;height:170px;border-radius:12px;background:linear-gradient(180deg, rgba(184,134,11,0.12), rgba(107,59,31,0.06));display:flex;align-items:center;justify-content:center}
+    .qr{width:110px;height:110px;border-radius:8px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    .serial-pill{position:absolute;top:18px;right:18px;padding:8px 12px;border-radius:10px;background:linear-gradient(90deg, rgba(184,134,11,0.06), rgba(107,59,31,0.04));font-weight:700;color:#6b3b1f;letter-spacing:1px}
+  </style>
+</head>
+<body>
+  <div class="controls container mb-3">
+    <input id="studentName" class="form-control mb-2" placeholder="Student Full Name">
+    <input id="course" class="form-control mb-2" placeholder="Course / Subject">
+    <input id="date" class="form-control mb-2" placeholder="Date (DD-MM-YYYY)">
+    <select id="awardType" class="form-select mb-2">
+      <option>Top Performer</option>
+      <option>Distinction</option>
+      <option>Best Improvement</option>
+    </select>
+    <button id="genBtn" class="btn btn-primary">Generate</button>
+    <button id="downloadBtn" class="btn btn-outline-dark">Download PNG</button>
+  </div>
+
+  <div class="certificate-wrap" id="certificate">
+    <div class="foil-band"><div class="monogram">RU</div></div>
+    <div class="serial-pill" id="serial">S/N: RUT-2025-001</div>
+    <div class="watermark">RUCHI TUTORIAL</div>
+    <div class="content">
+      <header class="cert-header">
+        <div>
+          <h2 class="title">Certificate of Excellence</h2>
+          <div class="sub">Presented by Ruchi Tutorial</div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:12px;color:#6b6b6b;text-transform:uppercase;letter-spacing:1px">Award Type</div>
+          <div id="awardLabel" style="font-weight:700;color:#6b3b1f;font-size:16px">Top Performer</div>
+        </div>
+      </header>
+      <main>
+        <div>This certificate is proudly awarded to</div>
+        <div class="student" id="studentNameLabel">[Student Full Name]</div>
+        <div>For achievement in <strong id="courseLabel">Subject</strong>.</div>
+        <div style="margin-top:22px;font-size:14px;color:#6b6b6b">Awarded on <strong id="dateLabel">01-01-2025</strong></div>
+      </main>
+      <aside style="margin-top:20px;display:flex;align-items:center;gap:20px">
+        <div class="badge"><div style="font-size:48px;color:#6b3b1f">★</div></div>
+        <div class="qr" id="qrcode"></div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs2@0.0.2/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    function makeSerial(){
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth()+1).padStart(2,'0');
+      const d = String(now.getDate()).padStart(2,'0');
+      const rnd = Math.floor(Math.random()*900+100);
+      return `RUT-${y}${m}${d}-${rnd}`;
+    }
+
+    const qrContainer = document.getElementById('qrcode');
+    let qr;
+
+    function renderQR(text){
+      qrContainer.innerHTML='';
+      qr = new QRCode(qrContainer, {text, width:100, height:100, colorDark:'#231815', colorLight:'#ffffff'});
+    }
+
+    function populate(){
+      const name = document.getElementById('studentName').value || '[Student Full Name]';
+      const course = document.getElementById('course').value || 'Subject';
+      const date = document.getElementById('date').value || '01-01-2025';
+      const award = document.getElementById('awardType').value;
+      const id = makeSerial();
+
+      document.getElementById('studentNameLabel').textContent = name;
+      document.getElementById('courseLabel').textContent = course;
+      document.getElementById('dateLabel').textContent = date;
+      document.getElementById('awardLabel').textContent = award;
+      document.getElementById('serial').textContent = 'S/N: ' + id;
+
+      // Encode ALL details in QR link
+      const baseURL = window.location.origin + window.location.pathname.replace("certificate.html","verify.html");
+      const verifyURL = `${baseURL}?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}&course=${encodeURIComponent(course)}&award=${encodeURIComponent(award)}&date=${encodeURIComponent(date)}&issuer=Ruchi%20Tutorial`;
+      renderQR(verifyURL);
+    }
+
+    document.getElementById('genBtn').addEventListener('click', populate);
+
+    document.getElementById('downloadBtn').addEventListener('click', ()=>{
+      html2canvas(document.getElementById('certificate'), {scale:2}).then(canvas=>{
+        const link = document.createElement('a');
+        link.download = (document.getElementById('studentName').value || 'certificate')+'.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    });
+
+    populate();
+  </script>
+</body>
+  </html>
