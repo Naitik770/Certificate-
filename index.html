@@ -181,7 +181,7 @@ function populate() {
   localStorage.setItem("certificates", JSON.stringify(saved));
   
   // QR Code URL
-  const baseURL = 'verify.html'; // if hosted, replace with https://yourwebsite.com/verify.html
+  const baseURL = 'https://naitik770.github.io/Certificate-/Verify.html'; // if hosted, replace with https://yourwebsite.com/verify.html
   const verifyURL = `${baseURL}?id=${encodeURIComponent(id)}&name=${encodeURIComponent(name)}`;
   renderQR(verifyURL);
 }
